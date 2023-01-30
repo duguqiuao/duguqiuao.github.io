@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <feed xmlns="http://www.w3.org/2005/Atom">
-  <title>Hexo</title>
+  <title>David</title>
   
   
   <link href="http://example.com/atom.xml" rel="self"/>
@@ -10,7 +10,7 @@
   <id>http://example.com/</id>
   
   <author>
-    <name>John Doe</name>
+    <name>su david</name>
     
   </author>
   
@@ -29,6 +29,332 @@
       
       
     <summary type="html">&lt;p&gt;Welcome to &lt;a href=&quot;https://hexo.io/&quot;&gt;Hexo&lt;/a&gt;! This is your very first post. Check &lt;a href=&quot;https://hexo.io/docs/&quot;&gt;documentation&lt;/a&gt; for</summary>
+      
+    
+    
+    
+    
+  </entry>
+  
+  <entry>
+    <title></title>
+    <link href="http://example.com/2023/01/09/%E4%BF%A1%E5%8F%B7%E9%87%8F%E3%80%81NSLock%E5%92%8Csynchronized/"/>
+    <id>http://example.com/2023/01/09/%E4%BF%A1%E5%8F%B7%E9%87%8F%E3%80%81NSLock%E5%92%8Csynchronized/</id>
+    <published>2023-01-09T06:13:47.431Z</published>
+    <updated>2023-01-30T05:55:43.681Z</updated>
+    
+    
+    
+    
+    
+  </entry>
+  
+  <entry>
+    <title></title>
+    <link href="http://example.com/2023/01/09/WKWebView%20allowsBackForwardNavigationGestures%20%E5%B1%9E%E6%80%A7%E5%88%86%E8%A7%A3/"/>
+    <id>http://example.com/2023/01/09/WKWebView%20allowsBackForwardNavigationGestures%20%E5%B1%9E%E6%80%A7%E5%88%86%E8%A7%A3/</id>
+    <published>2023-01-09T02:40:49.334Z</published>
+    <updated>2023-01-30T05:55:43.682Z</updated>
+    
+    <content type="html"><![CDATA[<h4 id="WKWebView-allowsBackForwardNavigationGestures属性作用是设置手势前进后退，若需要单独控制前进或者后退则需要对该属性进行分解。"><a href="#WKWebView-allowsBackForwardNavigationGestures属性作用是设置手势前进后退，若需要单独控制前进或者后退则需要对该属性进行分解。" class="headerlink" title="WKWebView allowsBackForwardNavigationGestures属性作用是设置手势前进后退，若需要单独控制前进或者后退则需要对该属性进行分解。"></a>WKWebView allowsBackForwardNavigationGestures属性作用是设置手势前进后退，若需要单独控制前进或者后退则需要对该属性进行分解。</h4><h6 id="分析发现WKWebView的前进后退是由两个UIScreenEdgePanGestureRecognizer-UIRectEdgeLeft、UIRectEdgeRigth-手势来控制的，在allowsBackForwardNavigationGestures-SET-操作时候进行了手势的增加删除（删除手势并且手势的target会被置nil）。并不是单纯的enabled设置。"><a href="#分析发现WKWebView的前进后退是由两个UIScreenEdgePanGestureRecognizer-UIRectEdgeLeft、UIRectEdgeRigth-手势来控制的，在allowsBackForwardNavigationGestures-SET-操作时候进行了手势的增加删除（删除手势并且手势的target会被置nil）。并不是单纯的enabled设置。" class="headerlink" title="分析发现WKWebView的前进后退是由两个UIScreenEdgePanGestureRecognizer (UIRectEdgeLeft、UIRectEdgeRigth) 手势来控制的，在allowsBackForwardNavigationGestures SET 操作时候进行了手势的增加删除（删除手势并且手势的target会被置nil）。并不是单纯的enabled设置。"></a>分析发现WKWebView的前进后退是由两个UIScreenEdgePanGestureRecognizer (UIRectEdgeLeft、UIRectEdgeRigth) 手势来控制的，在allowsBackForwardNavigationGestures SET 操作时候进行了手势的增加删除（删除手势并且手势的target会被置nil）。并不是单纯的enabled设置。</h6><p><img src="https://upload-images.jianshu.io/upload_images/5330424-37e47f19cd698bf6.png?imageMogr2/auto-orient/strip%7CimageView2/2/format/webp" alt="img"></p><p>找到手势就好办了，创建一个AYWKWebView 继承 WKWebView</p><p><img src="https://upload-images.jianshu.io/upload_images/5330424-e6f20cbc272c7f84.png?imageMogr2/auto-orient/strip%7CimageView2/2/format/webp" alt="img"></p><h6 id="用NS-UNAVAILABLE宏禁用allowsBackForwardNavigationGestures，并且定义两个分解属性"><a href="#用NS-UNAVAILABLE宏禁用allowsBackForwardNavigationGestures，并且定义两个分解属性" class="headerlink" title="用NS_UNAVAILABLE宏禁用allowsBackForwardNavigationGestures，并且定义两个分解属性"></a>用NS_UNAVAILABLE宏禁用allowsBackForwardNavigationGestures，并且定义两个分解属性</h6><p>在WebView init时候调用super.allowsBackForwardNavigationGestures &#x3D; YES; （self.allowsBackForwardNavigationGestures已经被禁用），重写-[addGestureRecognizer:]方法，UIScreenEdgePanGestureRecognizer手势进行强引用，把新添加的手势禁用掉，</p><p>然后在allowsBackNavigationGestures和allowsForwardNavigationGestures的 SET 方法设置对应手势的enabled属性，</p><p><img src="https://upload-images.jianshu.io/upload_images/5330424-bf5efd3c6d38edc5.png?imageMogr2/auto-orient/strip%7CimageView2/2/format/webp" alt="img"></p><p>​      allowsBackForwardNavigationGestures分解</p><h6 id="重写-addGestureRecognizer-为避免其它UIScreenEdgePanGestureRecognizer手势干扰，增加一个allowsBackNavigationGesturesSet属性标记是否是由于allowsBackNavigationGestures设置导致，在-supersetAllowsBackForwardNavigationGestures-方法执行前后进行allowsBackNavigationGesturesSet开关控制"><a href="#重写-addGestureRecognizer-为避免其它UIScreenEdgePanGestureRecognizer手势干扰，增加一个allowsBackNavigationGesturesSet属性标记是否是由于allowsBackNavigationGestures设置导致，在-supersetAllowsBackForwardNavigationGestures-方法执行前后进行allowsBackNavigationGesturesSet开关控制" class="headerlink" title="重写-[addGestureRecognizer:]为避免其它UIScreenEdgePanGestureRecognizer手势干扰，增加一个allowsBackNavigationGesturesSet属性标记是否是由于allowsBackNavigationGestures设置导致，在[supersetAllowsBackForwardNavigationGestures:]方法执行前后进行allowsBackNavigationGesturesSet开关控制"></a>重写-[addGestureRecognizer:]为避免其它UIScreenEdgePanGestureRecognizer手势干扰，增加一个allowsBackNavigationGesturesSet属性标记是否是由于allowsBackNavigationGestures设置导致，在[supersetAllowsBackForwardNavigationGestures:]方法执行前后进行allowsBackNavigationGesturesSet开关控制</h6><p><img src="https://upload-images.jianshu.io/upload_images/5330424-c4947d3f1505c5ff.png?imageMogr2/auto-orient/strip%7CimageView2/2/format/webp" alt="img"></p><p>​allowsBackNavigationGesturesSet开关控制</p><h6 id="然后改写一下-addGestureRecognizer-方法"><a href="#然后改写一下-addGestureRecognizer-方法" class="headerlink" title="然后改写一下-[addGestureRecognizer:]方法"></a>然后改写一下-[addGestureRecognizer:]方法</h6><p><img src="https://upload-images.jianshu.io/upload_images/5330424-79b9f041c30b000c.png?imageMogr2/auto-orient/strip%7CimageView2/2/format/webp" alt="img"></p><p>​addGestureRecognizer最终代码</p><h6 id="这样就实现了allowsBackForwardNavigationGestures属性的分解"><a href="#这样就实现了allowsBackForwardNavigationGestures属性的分解" class="headerlink" title="这样就实现了allowsBackForwardNavigationGestures属性的分解"></a>这样就实现了allowsBackForwardNavigationGestures属性的分解</h6><p><img src="https://upload-images.jianshu.io/upload_images/5330424-aa8f7093c11669c8.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1200/format/webp" alt="img"></p>]]></content>
+    
+    
+      
+      
+    <summary type="html">&lt;h4 id=&quot;WKWebView-allowsBackForwardNavigationGestures属性作用是设置手势前进后退，若需要单独控制前进或者后退则需要对该属性进行分解。&quot;&gt;&lt;a href=&quot;#WKWebView-allowsBackForwardNavigatio</summary>
+      
+    
+    
+    
+    
+  </entry>
+  
+  <entry>
+    <title></title>
+    <link href="http://example.com/2023/01/09/Xocde%20%20Developer%20Tools%20Access%20%E6%8F%90%E7%A4%BA%E5%A4%84%E7%90%86%E5%8A%9E%E6%B3%95/"/>
+    <id>http://example.com/2023/01/09/Xocde%20%20Developer%20Tools%20Access%20%E6%8F%90%E7%A4%BA%E5%A4%84%E7%90%86%E5%8A%9E%E6%B3%95/</id>
+    <published>2023-01-09T02:40:45.520Z</published>
+    <updated>2023-01-30T05:55:43.681Z</updated>
+    
+    <content type="html"><![CDATA[<h3 id="Xocde-Developer-Tools-Access-提示处理办法"><a href="#Xocde-Developer-Tools-Access-提示处理办法" class="headerlink" title="Xocde  Developer Tools Access 提示处理办法"></a>Xocde  Developer Tools Access 提示处理办法</h3><p><img src="https://upload-images.jianshu.io/upload_images/1742158-70811df0fe59d2fc.jpg?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="access.jpg"></p><p>终端内执行DevToolsSecurity –status 查看状态，，如果现实状态为disable，就会出现我们碰到的问题，我们只需要把状态改为</p><p>DevToolsSecurity –enable.就可以解决这个问题</p><p>解决方案:</p><p>打开终端输入下边命令：</p><p>DevToolsSecurity –status 查看状态</p><p>DevToolsSecurity –enable 输入密码，修改为enable，即可用</p><p>DevToolsSecurity –disable 输入密码，修改为disable，即关闭</p>]]></content>
+    
+    
+      
+      
+    <summary type="html">&lt;h3 id=&quot;Xocde-Developer-Tools-Access-提示处理办法&quot;&gt;&lt;a href=&quot;#Xocde-Developer-Tools-Access-提示处理办法&quot; class=&quot;headerlink&quot; title=&quot;Xocde  Developer Tools</summary>
+      
+    
+    
+    
+    
+  </entry>
+  
+  <entry>
+    <title></title>
+    <link href="http://example.com/2023/01/09/xcode%20%20%E8%BF%90%E8%A1%8C%E7%9C%9F%E6%9C%BA%E6%8A%A5%20%20%20bitcode%20bundle%20could%20not%20be%20generated/"/>
+    <id>http://example.com/2023/01/09/xcode%20%20%E8%BF%90%E8%A1%8C%E7%9C%9F%E6%9C%BA%E6%8A%A5%20%20%20bitcode%20bundle%20could%20not%20be%20generated/</id>
+    <published>2023-01-09T02:40:45.495Z</published>
+    <updated>2023-01-30T05:55:43.687Z</updated>
+    
+    <content type="html"><![CDATA[<h3 id="xcode-运行真机报-bitcode-bundle-could-not-be-generated"><a href="#xcode-运行真机报-bitcode-bundle-could-not-be-generated" class="headerlink" title="xcode  运行真机报   bitcode bundle could not be generated"></a>xcode  运行真机报   bitcode bundle could not be generated</h3><p>1.联系第三方框架的提供者， 让他们支持bitcode，这个执行起来有难度。<br>2.要么在项目中将bitcode设为No，可以在”Build Settings”-&gt;”Enable Bitcode”选项中看到这个</p><p>![image-20230109100727377](&#x2F;Users&#x2F;david&#x2F;Library&#x2F;Application Support&#x2F;typora-user-images&#x2F;image-20230109100727377.png)</p>]]></content>
+    
+    
+      
+      
+    <summary type="html">&lt;h3 id=&quot;xcode-运行真机报-bitcode-bundle-could-not-be-generated&quot;&gt;&lt;a href=&quot;#xcode-运行真机报-bitcode-bundle-could-not-be-generated&quot; class=&quot;headerlink&quot; t</summary>
+      
+    
+    
+    
+    
+  </entry>
+  
+  <entry>
+    <title></title>
+    <link href="http://example.com/2023/01/09/%E9%87%8D%E6%96%B0%E8%AE%A4%E8%AF%86id%20%E4%BB%A5%E5%8F%8A%20Class/"/>
+    <id>http://example.com/2023/01/09/%E9%87%8D%E6%96%B0%E8%AE%A4%E8%AF%86id%20%E4%BB%A5%E5%8F%8A%20Class/</id>
+    <published>2023-01-09T02:40:27.934Z</published>
+    <updated>2023-01-30T05:55:43.676Z</updated>
+    
+    <content type="html"><![CDATA[<h3 id="重新认识id-以及-Class"><a href="#重新认识id-以及-Class" class="headerlink" title="重新认识id 以及 Class"></a>重新认识id 以及 Class</h3><p>id:类   class:对象<br>我们首先写一个<code>Class</code>去看系统的 API：</p><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">typedef struct objc_class *Class;</span><br></pre></td></tr></table></figure><p>这时我们可以看到下面有个<code>id </code>类型的结构体,并且里面只有一个<code>Class</code>类型的指针isa：</p><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">typedef struct objc_object *id;   </span><br><span class="line">struct objc_object &#123;</span><br><span class="line">    Class _Nonnull isa  OBJC_ISA_AVAILABILITY;</span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure><p>我们在来看一下<code>objc_class </code>的结构体里面有什么：</p><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><span class="line">struct objc_class &#123;</span><br><span class="line">    Class _Nonnull isa  OBJC_ISA_AVAILABILITY;         //元类指针</span><br><span class="line">#if !__OBJC2__                                         //这个下面的现在已经不用了！！！</span><br><span class="line"></span><br><span class="line">    Class _Nullable super_class                              OBJC2_UNAVAILABLE;    //父类</span><br><span class="line">    const char * _Nonnull name                               OBJC2_UNAVAILABLE;    //类名</span><br><span class="line">    long version                                             OBJC2_UNAVAILABLE;    //类的版本</span><br><span class="line">    long info                                                OBJC2_UNAVAILABLE;    //信息</span><br><span class="line">    long instance_size                                       OBJC2_UNAVAILABLE;    //内存布局</span><br><span class="line">    struct objc_ivar_list * _Nullable ivars                  OBJC2_UNAVAILABLE;    //变量列表</span><br><span class="line">    struct objc_method_list * _Nullable * _Nullable methodLists                    OBJC2_UNAVAILABLE;    //函数列表</span><br><span class="line">    struct objc_cache * _Nonnull cache                       OBJC2_UNAVAILABLE;    //缓存列表</span><br><span class="line">    struct objc_protocol_list * _Nullable protocols          OBJC2_UNAVAILABLE;    //协议列表</span><br><span class="line">#endif</span><br><span class="line">&#125; OBJC2_UNAVAILABLE;</span><br><span class="line">/* Use `Class` instead of `struct objc_class *` */            #if 这个已经废弃了，现在使用Class！！！</span><br></pre></td></tr></table></figure><p>我相信很多人学习<code>runtime</code>的时候都看过这个代码，并且很多书籍也以上面的代码来讲解<code>runtime</code>的。其实现在这个已经废弃了，从上面的代码我们看到类实例(对象)中只有一个元素，isa指针，这个指针指向的是实例所述的类，类结构体中也有一个isa指针，其他的我好像是看不出来了，现在我们从objc源代码看一下类真正的结构：<br><code>objc_class</code><br>代码摘自objc4-750版本，代码太长，所以只看下属性:</p><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line">struct objc_class : objc_object &#123;</span><br><span class="line">    // Class ISA;            //isa指针注释掉了,暂且不管</span><br><span class="line">    Class superclass;         //父类指针，</span><br><span class="line">    cache_t cache;             // formerly cache pointer and vtable                   //缓存，应该是我们知道的缓存方法的cache吧</span><br><span class="line">    class_data_bits_t bits;    // class_rw_t * plus custom rr/alloc flags             //应该是类存储的字节吧</span><br><span class="line">    class_rw_t *data() &#123;         //我们的方法列表、属性列表、变量什么的应该在这里面，，，往下找</span><br><span class="line">        return bits.data();</span><br><span class="line">    &#125;</span><br><span class="line">......</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure><p>只有这几个属性，我们的方法列表、属性列表、变量什么的哪去了？我觉得应该跟data()有关，一看bits就是存数据的，data()是class_rw_t类型的，应该能从class_rw_t定义里面找到原因，来看下class_rw_t：</p><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><span class="line">struct class_rw_t &#123;</span><br><span class="line">    // Be warned that Symbolication knows the layout of this structure.</span><br><span class="line">    uint32_t flags;</span><br><span class="line">    uint32_t version;                    //版本信息</span><br><span class="line">    const class_ro_t *ro;</span><br><span class="line">    method_array_t methods;              //方法列表</span><br><span class="line">    property_array_t properties;         //属性列表</span><br><span class="line">    protocol_array_t protocols;          //协议列表</span><br><span class="line">    Class firstSubclass;</span><br><span class="line">    Class nextSiblingClass;</span><br><span class="line">    char *demangledName;</span><br><span class="line">#if SUPPORT_INDEXED_ISA</span><br><span class="line">    uint32_t index;</span><br><span class="line">#endif</span><br><span class="line">    ......</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure><p>看到了我们熟悉的方法列表、属性列表、协议列表，又看到了一个跟<code>class_rw_t</code>一样的东东<code>class_ro_t</code>，继续深入：</p><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br></pre></td><td class="code"><pre><span class="line">struct class_ro_t &#123;</span><br><span class="line">    uint32_t flags;</span><br><span class="line">    uint32_t instanceStart;</span><br><span class="line">    uint32_t instanceSize;              //实例对象大小</span><br><span class="line">#ifdef __LP64__</span><br><span class="line">    uint32_t reserved;</span><br><span class="line">#endif </span><br><span class="line">    const uint8_t * ivarLayout;</span><br><span class="line">    const char * name;                  //类名</span><br><span class="line">    method_list_t * baseMethodList;</span><br><span class="line">    protocol_list_t * baseProtocols;</span><br><span class="line">    const ivar_list_t * ivars;          // 成员变量</span><br><span class="line">    const uint8_t * weakIvarLayout;</span><br><span class="line">    property_list_t *baseProperties;</span><br><span class="line">    method_list_t *baseMethods() const &#123;</span><br><span class="line">        return baseMethodList;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure><p>####class_rw_t 、class_ro_t中的rw、ro应该是readwrite、readonly的意思</p><ul><li>class_ro_t存储的应该是经过编译之后的类实例的数据，保存了经过编译的变量、属性、实例方法、类方法等，编译之后这些都是readonly类型的，不能再发生改变了，那几个list就是类本来的方法属性协议啥的</li><li>class_rw_t是readwrite类型的，结合咱们之前了解的runtime的特性，还有里面的几个列表，顿时感觉自己已经猜到了真谛，这个是运行时的真正的类实例的结构，里面的ro是编译之后的类的结构，所以是const类型的，外面这几个列表应该是跟category有关，这么一想好像都通了。。。</li></ul><p><strong>我们用Runtime的几个copy列表的方法看一下<br>class_copyIvarList：获取变量列表，返回的应该是类的class_rw_t里面的class_ro_t下面的ivarlist<br>class_copyMethodList：因为runtime可以动态添加方法、协议，那么返回的应该是class_rw_t下面的methods，而不是class_ro_t里面的，因为ro是const类型的。<br>OK，来看下在objc源码中它的实现（看下关键代码就行）:</strong></p><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br></pre></td><td class="code"><pre><span class="line">```</span><br><span class="line">Ivar *</span><br><span class="line">class_copyIvarList(Class cls, unsigned int *outCount)</span><br><span class="line">&#123;</span><br><span class="line">    const ivar_list_t *ivars;</span><br><span class="line">    Ivar *result = nil;</span><br><span class="line">    unsigned int count = 0;</span><br><span class="line">    if (!cls) &#123;</span><br><span class="line">        if (outCount) *outCount = 0;</span><br><span class="line">        return nil;</span><br><span class="line">    &#125;</span><br><span class="line">    mutex_locker_t lock(runtimeLock);</span><br><span class="line">    assert(cls-&gt;isRealized());</span><br><span class="line">    if ((ivars = cls-&gt;data()-&gt;ro-&gt;ivars)  &amp;&amp;  ivars-&gt;count) &#123;</span><br><span class="line">        result = (Ivar *)malloc((ivars-&gt;count+1) * sizeof(Ivar));</span><br><span class="line">        </span><br><span class="line">        for (auto&amp; ivar : *ivars) &#123;</span><br><span class="line">            if (!ivar.offset) continue;  // anonymous bitfield</span><br><span class="line">            result[count++] = &amp;ivar;</span><br><span class="line">        &#125;</span><br><span class="line">        result[count] = nil;</span><br><span class="line">    &#125;</span><br><span class="line">    if (outCount) *outCount = count;</span><br><span class="line">    return result;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br></pre></td><td class="code"><pre><span class="line">```</span><br><span class="line">Method *</span><br><span class="line">class_copyMethodList(Class cls, unsigned int *outCount)</span><br><span class="line">&#123;</span><br><span class="line">    unsigned int count = 0;</span><br><span class="line">    Method *result = nil;</span><br><span class="line">    if (!cls) &#123;</span><br><span class="line">        if (outCount) *outCount = 0;</span><br><span class="line">        return nil;</span><br><span class="line">    &#125;</span><br><span class="line">    mutex_locker_t lock(runtimeLock);</span><br><span class="line">    assert(cls-&gt;isRealized());</span><br><span class="line">    count = cls-&gt;data()-&gt;methods.count();</span><br><span class="line">    if (count &gt; 0) &#123;</span><br><span class="line">        result = (Method *)malloc((count + 1) * sizeof(Method));</span><br><span class="line">        count = 0;</span><br><span class="line">        for (auto&amp; meth : cls-&gt;data()-&gt;methods) &#123;</span><br><span class="line">            result[count++] = &amp;meth;</span><br><span class="line">        &#125;</span><br><span class="line">        result[count] = nil;</span><br><span class="line">    &#125;</span><br><span class="line">    if (outCount) *outCount = count;</span><br><span class="line">    return result;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure><p>这样一看，很多我们之前不理解的都能说通了：</p><ul><li>类实例是对象，它的isa指针指向类，类也有个isa指针，指向它的元类，类是元类的对象，看定义，objc_class也是objc_object没错，objc_object里面有isa指针，所以objc_class也有isa指针啦。</li><li>category只能添加方法、不能添加变量的原因也找到了，因为变量是存储在ro里面的，只读，方法列表协议列表在rw中，所以可以动态添加，它们俩存储位置不一样。</li></ul><p>#最后总结通过一张图进行总结：<img src="https://upload-images.jianshu.io/upload_images/1742158-09754fbdafdc0b40.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="objc_class.png"></p><p>本文部分段落引用了<a href="https://www.jianshu.com/u/022a934e7c92">ElaineYin</a>、<a href="https://www.jianshu.com/u/a9008a597529">CornBallast</a>二位大佬的文章。在此表示感谢！</p>]]></content>
+    
+    
+      
+      
+    <summary type="html">&lt;h3 id=&quot;重新认识id-以及-Class&quot;&gt;&lt;a href=&quot;#重新认识id-以及-Class&quot; class=&quot;headerlink&quot; title=&quot;重新认识id 以及 Class&quot;&gt;&lt;/a&gt;重新认识id 以及 Class&lt;/h3&gt;&lt;p&gt;id:类   class:对象&lt;br</summary>
+      
+    
+    
+    
+    
+  </entry>
+  
+  <entry>
+    <title></title>
+    <link href="http://example.com/2023/01/09/UILabel%20%E5%A6%82%E4%BD%95%E8%AE%BE%E7%BD%AE%E6%8C%89%E7%85%A7%E5%AD%97%E8%8A%82%E6%8D%A2%E8%A1%8C/"/>
+    <id>http://example.com/2023/01/09/UILabel%20%E5%A6%82%E4%BD%95%E8%AE%BE%E7%BD%AE%E6%8C%89%E7%85%A7%E5%AD%97%E8%8A%82%E6%8D%A2%E8%A1%8C/</id>
+    <published>2023-01-09T02:40:27.913Z</published>
+    <updated>2023-01-30T05:55:43.675Z</updated>
+    
+    <content type="html"><![CDATA[<h3 id="UILabel-如何设置按照字节换行"><a href="#UILabel-如何设置按照字节换行" class="headerlink" title="UILabel 如何设置按照字节换行"></a>UILabel 如何设置按照字节换行</h3><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">tipLabel.lineBreakMode = NSLineBreakByCharWrapping;</span><br></pre></td></tr></table></figure><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">typedef NS_ENUM(NSInteger, NSLineBreakMode) &#123;</span><br><span class="line">    NSLineBreakByWordWrapping = 0,         // Wrap at word boundaries, default</span><br><span class="line">    NSLineBreakByCharWrapping,        // Wrap at character boundaries</span><br><span class="line">    NSLineBreakByClipping,        // Simply clip</span><br><span class="line">    NSLineBreakByTruncatingHead,    // Truncate at head of line: &quot;...wxyz&quot;</span><br><span class="line">    NSLineBreakByTruncatingTail,    // Truncate at tail of line: &quot;abcd...&quot;</span><br><span class="line">    NSLineBreakByTruncatingMiddle    // Truncate middle of line:  &quot;ab...yz&quot;</span><br><span class="line">&#125; API_AVAILABLE(macos(10.0), ios(6.0), watchos(2.0), tvos(9.0));</span><br></pre></td></tr></table></figure>]]></content>
+    
+    
+      
+      
+    <summary type="html">&lt;h3 id=&quot;UILabel-如何设置按照字节换行&quot;&gt;&lt;a href=&quot;#UILabel-如何设置按照字节换行&quot; class=&quot;headerlink&quot; title=&quot;UILabel 如何设置按照字节换行&quot;&gt;&lt;/a&gt;UILabel 如何设置按照字节换行&lt;/h3&gt;&lt;figure c</summary>
+      
+    
+    
+    
+    
+  </entry>
+  
+  <entry>
+    <title></title>
+    <link href="http://example.com/2023/01/09/xib%E6%B7%BB%E5%8A%A0%E6%89%8B%E5%8A%BF%E5%90%8E%E6%8A%A5%E9%94%99:-[UITapGestureRecognizer%20setFrame:]:%20unrecognized%20selector%20sent%20to%20instance%20xxx.../"/>
+    <id>http://example.com/2023/01/09/xib%E6%B7%BB%E5%8A%A0%E6%89%8B%E5%8A%BF%E5%90%8E%E6%8A%A5%E9%94%99:-[UITapGestureRecognizer%20setFrame:]:%20unrecognized%20selector%20sent%20to%20instance%20xxx.../</id>
+    <published>2023-01-09T02:40:16.291Z</published>
+    <updated>2023-01-30T05:55:43.685Z</updated>
+    
+    <content type="html"><![CDATA[<h3 id="xib添加手势后报错-UITapGestureRecognizer-setFrame-unrecognized-selector-sent-to-instance-xxx…"><a href="#xib添加手势后报错-UITapGestureRecognizer-setFrame-unrecognized-selector-sent-to-instance-xxx…" class="headerlink" title="xib添加手势后报错:-[UITapGestureRecognizer setFrame:]: unrecognized selector sent to instance xxx…"></a>xib添加手势后报错:-[UITapGestureRecognizer setFrame:]: unrecognized selector sent to instance xxx…</h3><p>主要原因如下:</p><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">(instancetype)mineHeaderView</span><br><span class="line">&#123;</span><br><span class="line">  return [[[NSBundle mainBundle] loadNibNamed:NSStringFromClass([self class]) owner:self options:nil] lastObject];</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure><p>添加手势后, 以上的创建对象方法就不可以通过lastObject来获取了, 因为获取到的是最后添加的手势对象, 所以才会出现这个错误</p><p>解决方法:</p><p>将lastObject改为firstObject即可..</p>]]></content>
+    
+    
+      
+      
+    <summary type="html">&lt;h3 id=&quot;xib添加手势后报错-UITapGestureRecognizer-setFrame-unrecognized-selector-sent-to-instance-xxx…&quot;&gt;&lt;a href=&quot;#xib添加手势后报错-UITapGestureRecognizer-</summary>
+      
+    
+    
+    
+    
+  </entry>
+  
+  <entry>
+    <title></title>
+    <link href="http://example.com/2023/01/09/%E8%8E%B7%E5%8F%96%E5%BD%93%E5%89%8D%E8%AE%BE%E5%A4%87%E6%97%B6%E9%97%B4/"/>
+    <id>http://example.com/2023/01/09/%E8%8E%B7%E5%8F%96%E5%BD%93%E5%89%8D%E8%AE%BE%E5%A4%87%E6%97%B6%E9%97%B4/</id>
+    <published>2023-01-09T02:40:08.499Z</published>
+    <updated>2023-01-30T05:55:43.682Z</updated>
+    
+    <content type="html"><![CDATA[<h3 id="获取当前时间"><a href="#获取当前时间" class="headerlink" title="获取当前时间"></a>获取当前时间</h3><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">NSDate *date = [NSDate date];</span><br><span class="line">NSDateFormatter *formatter = [[NSDateFormatter alloc] init];</span><br><span class="line">[formatter setDateFormat:@&quot;yyyy-MM-dd HH:mm:ss&quot;];</span><br><span class="line">//获取当前时间日期展示字符串 如：2019-05-23-13:58:59</span><br><span class="line">NSString *str = [formatter stringFromDate:date];</span><br></pre></td></tr></table></figure>]]></content>
+    
+    
+      
+      
+    <summary type="html">&lt;h3 id=&quot;获取当前时间&quot;&gt;&lt;a href=&quot;#获取当前时间&quot; class=&quot;headerlink&quot; title=&quot;获取当前时间&quot;&gt;&lt;/a&gt;获取当前时间&lt;/h3&gt;&lt;figure class=&quot;highlight plaintext&quot;&gt;&lt;table&gt;&lt;tr&gt;&lt;td class=</summary>
+      
+    
+    
+    
+    
+  </entry>
+  
+  <entry>
+    <title></title>
+    <link href="http://example.com/2023/01/09/SEL%E3%80%81IMP%E3%80%81Method/"/>
+    <id>http://example.com/2023/01/09/SEL%E3%80%81IMP%E3%80%81Method/</id>
+    <published>2023-01-09T02:40:00.517Z</published>
+    <updated>2023-01-30T05:55:43.684Z</updated>
+    
+    <content type="html"><![CDATA[<h2 id="先说一个大家都熟悉的-SEL"><a href="#先说一个大家都熟悉的-SEL" class="headerlink" title="先说一个大家都熟悉的  SEL"></a>先说一个大家都熟悉的  SEL</h2><blockquote><figure class="highlight plaintext"><figcaption><span>ID 就是```SEL```类型的。我们需要注意的是，只要方法的名字和参数序列完全相同,那么它们的 ID编号就是相同的。(这里我先提出个问题，既然```SEL```是方法的唯一标识，那不同的类调用名字相同的方法怎么办呢？稍后解答。。。)</span></figcaption><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">&gt;#####常见的几种方法来获取/创建选择器:</span><br></pre></td></tr></table></figure><p>SEL aSel &#x3D; @selector(didReceiveMemoryWarning);<br>SEL a_sel &#x3D; NSSelectorFromString(@”didReceiveMemoryWarning”);<br>SEL a_Sel &#x3D; sel_registerName(“didReceiveMemoryWarning”);</p></blockquote><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">打印结果：</span><br></pre></td></tr></table></figure><p>[5192:325263] 0x1214054bc___0x1214054bc___0x1214054bc</p><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">SEL的操作函数:</span><br></pre></td></tr></table></figure><p>&#x2F;&#x2F; 比较两个选择器<br>BOOL sel_isEqual ( SEL lhs, SEL rhs );<br>&#x2F;&#x2F;判断方法名是否映射到某个函数实现上<br>BOOL sel_isMapped(SEL sel);</p><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"></span><br><span class="line"></span><br><span class="line"></span><br><span class="line">##IMP：</span><br><span class="line">```IMP```即```Implementation```，为指向函数实现的指针，如果我们能够获取到这个指针，则可以直接调用该方法，充分证实了它就是一个函数的指针。</span><br><span class="line">#####代码定义如下：</span><br></pre></td></tr></table></figure><p>#if !OBJC_OLD_DISPATCH_PROTOTYPES<br>typedef void (<em>IMP)(void &#x2F;</em> id, SEL, … *&#x2F; );<br>#else<br>typedef id _Nullable (*IMP)(id _Nonnull, SEL _Nonnull, …);<br>#endif</p><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">其参数包含id,SEL,后面试实际的参数列表。</span><br><span class="line">那么，XX调用了XXX方法，其参数为XX都确定下来了。</span><br><span class="line">##还记得我们上面提出的问题吗？既然```SEL```是方法的唯一标识，那不同的类调用名字相同的方法怎么办呢？通过```IMP```就可以解决我们的疑问了。```SEL```就是为了查找方法的最终实现```IMP```</span><br><span class="line">获取```IMP```的方法：</span><br></pre></td></tr></table></figure><p>&#x2F;&#x2F;通过Method获取IMP<br>IMP method_getImplementation(Method m);<br>&#x2F;&#x2F; 返回方法的具体实现<br>IMP class_getMethodImplementation ( Class cls, SEL name );<br>IMP class_getMethodImplementation_stret ( Class cls, SEL name );</p><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">获取到```IMP```之后可直接调用方法：</span><br></pre></td></tr></table></figure><p>SEL aSel &#x3D; @selector(didReceiveMemoryWarning);<br>Method method &#x3D; class_getInstanceMethod([self class], aSel);<br>IMP imp &#x3D; method_getImplementation(method);<br>((void (*) (id, SEL)) (void *)imp)(self, aSel);</p><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"></span><br><span class="line">##Method:</span><br><span class="line">通过名字就能知道这是方法的意思，用于表示类定义中的方法，它的结构体中包含一个```SEL```和```IMP```，相当于在```SEL```和```IMP```之间作了一个映射。```Method```其实就是``` objc_method```的结构体指针:</span><br></pre></td></tr></table></figure><p>typedef struct objc_method *Method;<br>&#x2F;&#x2F;结构体定义如下：<br>struct objc_method {<br>    SEL _Nonnull method_name                                 OBJC2_UNAVAILABLE;&#x2F;&#x2F;方法名<br>    char * _Nullable method_types                            OBJC2_UNAVAILABLE;&#x2F;&#x2F;参数类型以及返回值类型编码<br>    IMP _Nonnull method_imp                                  OBJC2_UNAVAILABLE;&#x2F;&#x2F;方法实现指针<br>}                                                            OBJC2_UNAVAILABLE;</p><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"></span><br><span class="line">获取```Method```的方法：</span><br></pre></td></tr></table></figure><p>&#x2F;&#x2F; 获取实例方法<br>Method class_getInstanceMethod ( Class cls, SEL name );<br>&#x2F;&#x2F; 获取类方法<br>Method class_getClassMethod ( Class cls, SEL name );<br>&#x2F;&#x2F; 获取所有方法的数组<br>Method * class_copyMethodList ( Class cls, unsigned int *outCount );</p><p>&#96;&#96;&#96;<br>#总结：</p><blockquote><p>消息机制：任何方法的调用本质就是发送一个消息。编译器会将消息表达式<code>[receiver message]</code>转化为一个消息函数<code>objc_msgSend(receiver, selector)</code>。<br><code>objc_msgSend</code>做了如下事情：</p><p>通过对象的<code>isa</code>指针获取类的结构体。<br>在结构体的方法表里查找方法的<code>selector</code>。<br>如果没有找到<code>selector</code>，则通过<code>objc_msgSend</code>结构体中指向父类的指针找到父类，并在父类的方法表里查找方法的<code>selector</code>。<br>依次会一直找到<code>NSObject</code>。<br>一旦找到<code>selector</code>，就会获取到方法实现<code>IMP</code>。<br>传入相应的参数来执行方法的具体实现。<br>如果最终没有定位到selector，就会走消息转发流程</p></blockquote><p>![image-20230109102526365](&#x2F;Users&#x2F;david&#x2F;Library&#x2F;Application Support&#x2F;typora-user-images&#x2F;image-20230109102526365.png)</p>]]></content>
+    
+    
+      
+      
+    <summary type="html">&lt;h2 id=&quot;先说一个大家都熟悉的-SEL&quot;&gt;&lt;a href=&quot;#先说一个大家都熟悉的-SEL&quot; class=&quot;headerlink&quot; title=&quot;先说一个大家都熟悉的  SEL&quot;&gt;&lt;/a&gt;先说一个大家都熟悉的  SEL&lt;/h2&gt;&lt;blockquote&gt;
+&lt;figure cl</summary>
+      
+    
+    
+    
+    
+  </entry>
+  
+  <entry>
+    <title></title>
+    <link href="http://example.com/2023/01/09/web%E9%A1%B5%E9%9D%A2%20H5%E7%9A%84%E5%BE%AE%E4%BF%A1%E6%94%AF%E4%BB%98%E5%92%8C%E6%94%AF%E4%BB%98%E5%AE%9D%E6%94%AF%E4%BB%98/"/>
+    <id>http://example.com/2023/01/09/web%E9%A1%B5%E9%9D%A2%20H5%E7%9A%84%E5%BE%AE%E4%BF%A1%E6%94%AF%E4%BB%98%E5%92%8C%E6%94%AF%E4%BB%98%E5%AE%9D%E6%94%AF%E4%BB%98/</id>
+    <published>2023-01-09T02:40:00.501Z</published>
+    <updated>2023-01-30T05:55:43.686Z</updated>
+    
+    
+    
+    
+    
+  </entry>
+  
+  <entry>
+    <title></title>
+    <link href="http://example.com/2023/01/09/ios%EF%BC%9A%E4%BD%BF%E7%94%A8%E8%87%AA%E5%8A%A8%E5%B8%83%E5%B1%80%E7%BA%A6%E6%9D%9F%E6%97%B6%E5%A6%82%E4%BD%95%E8%8E%B7%E5%8F%96%E8%A7%86%E5%9B%BE%E7%9A%84%E5%BD%93%E5%89%8D%E5%AE%BD%E5%BA%A6%E5%92%8C%E9%AB%98%E5%BA%A6%EF%BC%9F/"/>
+    <id>http://example.com/2023/01/09/ios%EF%BC%9A%E4%BD%BF%E7%94%A8%E8%87%AA%E5%8A%A8%E5%B8%83%E5%B1%80%E7%BA%A6%E6%9D%9F%E6%97%B6%E5%A6%82%E4%BD%95%E8%8E%B7%E5%8F%96%E8%A7%86%E5%9B%BE%E7%9A%84%E5%BD%93%E5%89%8D%E5%AE%BD%E5%BA%A6%E5%92%8C%E9%AB%98%E5%BA%A6%EF%BC%9F/</id>
+    <published>2023-01-09T02:39:55.219Z</published>
+    <updated>2023-01-30T05:55:43.685Z</updated>
+    
+    <content type="html"><![CDATA[<h3 id="ios：使用自动布局约束时如何获取视图的当前宽度和高度？"><a href="#ios：使用自动布局约束时如何获取视图的当前宽度和高度？" class="headerlink" title="ios：使用自动布局约束时如何获取视图的当前宽度和高度？"></a>ios：使用自动布局约束时如何获取视图的当前宽度和高度？</h3><p>第一种方法:</p><p>[view layoutIfNeeded] 就会拿到设置完约束的值了</p><p>第二种方法:</p>]]></content>
+    
+    
+      
+      
+    <summary type="html">&lt;h3 id=&quot;ios：使用自动布局约束时如何获取视图的当前宽度和高度？&quot;&gt;&lt;a href=&quot;#ios：使用自动布局约束时如何获取视图的当前宽度和高度？&quot; class=&quot;headerlink&quot; title=&quot;ios：使用自动布局约束时如何获取视图的当前宽度和高度？&quot;&gt;&lt;/a&gt;io</summary>
+      
+    
+    
+    
+    
+  </entry>
+  
+  <entry>
+    <title></title>
+    <link href="http://example.com/2023/01/09/Swift%E5%AD%A6%E4%B9%A0%E8%AE%B0%E5%BD%95%20--%20Swift%E4%B8%ADthrows%E5%A4%84%E7%90%86%E6%96%B9%E5%BC%8F/"/>
+    <id>http://example.com/2023/01/09/Swift%E5%AD%A6%E4%B9%A0%E8%AE%B0%E5%BD%95%20--%20Swift%E4%B8%ADthrows%E5%A4%84%E7%90%86%E6%96%B9%E5%BC%8F/</id>
+    <published>2023-01-09T02:27:38.599Z</published>
+    <updated>2023-01-30T05:55:43.676Z</updated>
+    
+    <content type="html"><![CDATA[<h3 id="Swift学习记录-–-Swift中throws处理方式"><a href="#Swift学习记录-–-Swift中throws处理方式" class="headerlink" title="Swift学习记录 – Swift中throws处理方式"></a>Swift学习记录 – Swift中throws处理方式</h3><h3 id="第一种方法-“踹”"><a href="#第一种方法-“踹”" class="headerlink" title="第一种方法:   “踹”"></a>第一种方法:   “踹”</h3><blockquote><p>try  程序员手动捕捉异常</p></blockquote><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">// try方式  </span><br><span class="line">        do &#123;</span><br><span class="line">            try String.init(contentsOfFile: htmlPate!, encoding: String.Encoding.utf8)</span><br><span class="line">        &#125; catch &#123;</span><br><span class="line">            //抛出异常</span><br><span class="line">            print(error)</span><br><span class="line">        &#125;</span><br></pre></td></tr></table></figure><h3 id="第二种方法-“疑问踹”"><a href="#第二种方法-“疑问踹”" class="headerlink" title="第二种方法 :   “疑问踹”"></a>第二种方法 :   “疑问踹”</h3><blockquote><p>try?方式  系统帮助我们处理异常 ,如果该方法出现了异常, 则方法返回nil ,如果没有异常,则返回对应的对象 </p></blockquote><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">//安全校验</span><br><span class="line">guard let htmlCont = try? String.init(contentsOfFile: htmlPate!, encoding: String.Encoding.utf8) else &#123;</span><br><span class="line">            return</span><br><span class="line">        &#125;</span><br></pre></td></tr></table></figure><h3 id="第三种方法-我称之为“强踹”"><a href="#第三种方法-我称之为“强踹”" class="headerlink" title="第三种方法     我称之为“强踹”"></a>第三种方法     我称之为“强踹”</h3><blockquote><p>try!方式  直接告诉系统,该方法没有异常,如果该方法出现了错误,直接崩溃</p></blockquote><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">let htmlCont = try! String.init(contentsOfFile: htmlPate!, encoding: String.Encoding.utf8)</span><br><span class="line"></span><br></pre></td></tr></table></figure>]]></content>
+    
+    
+      
+      
+    <summary type="html">&lt;h3 id=&quot;Swift学习记录-–-Swift中throws处理方式&quot;&gt;&lt;a href=&quot;#Swift学习记录-–-Swift中throws处理方式&quot; class=&quot;headerlink&quot; title=&quot;Swift学习记录 – Swift中throws处理方式&quot;&gt;&lt;/a&gt;Sw</summary>
+      
+    
+    
+    
+    
+  </entry>
+  
+  <entry>
+    <title></title>
+    <link href="http://example.com/2023/01/09/OC%20%E7%9A%84%E6%B6%88%E6%81%AF%E8%BD%AC%E5%8F%91%E6%9C%BA%E5%88%B6/"/>
+    <id>http://example.com/2023/01/09/OC%20%E7%9A%84%E6%B6%88%E6%81%AF%E8%BD%AC%E5%8F%91%E6%9C%BA%E5%88%B6/</id>
+    <published>2023-01-09T02:27:36.712Z</published>
+    <updated>2023-01-30T05:55:43.683Z</updated>
+    
+    
+    
+    
+    
+  </entry>
+  
+  <entry>
+    <title></title>
+    <link href="http://example.com/2023/01/09/iOS%E4%BF%AE%E9%A5%B0%E8%AF%8D%E6%B1%87atomic%20%20%E5%92%8C%20%20nonatomic/"/>
+    <id>http://example.com/2023/01/09/iOS%E4%BF%AE%E9%A5%B0%E8%AF%8D%E6%B1%87atomic%20%20%E5%92%8C%20%20nonatomic/</id>
+    <published>2023-01-09T02:27:36.212Z</published>
+    <updated>2023-01-30T05:55:43.680Z</updated>
+    
+    <content type="html"><![CDATA[<h3 id="atomic-和-nonatomic"><a href="#atomic-和-nonatomic" class="headerlink" title="atomic  和  nonatomic"></a>atomic  和  nonatomic</h3><p>1.atomic  ：</p><blockquote><p> 原子性。系统默认的属性修饰词，系统会生成</p></blockquote><blockquote><p>  默认的属性修饰词，按官方文档上说即使从不同的线程通过getter或setter方法去访问属性也能完全的获取到或设置值，就是当线程A执行getter方法的时候（创建调用栈，返回地址，出栈），线程B如果执行setter方法，就必须先等getter 方法完成才能执行。</p></blockquote><blockquote><p>看Peak大神blog学的了一点：如果读写（load or store）的内存长度小于等于地址总线的长度，那么读写的操作是原子的，一次完成。比如bool，int，long在64位系统下的单次读写都是原子操作,比如int类型长度为4字节，读和写都可以通过一个指令完成，所以理论上读和写操作都是原子的。从访问内存的角度看nonatomic和atomic也并没有什么区别</p></blockquote><p>2.nonatomic ：</p><blockquote><p>  相对而言，通过nonatomic修饰的属性，并没有做锁的操作，多线程同时进行setter&#x2F;getter操作，并不能保证得到一个完整的value，所以相对atomic来说nonatomic修饰的属性访问速度更快，而且平时对线程安全我们更倾向于使用信号量、NSLock和synchronized去控制线程安全，他们都能保证代码块的原子性，所以几乎所有的属性都用nonatomic去修饰。</p></blockquote><p>#是不是使用了atomic就一定多线程安全呢？我们可以看看如下代码<br>        @property (atomic, strong) NSString*  stringA;  &#x2F;&#x2F;声明一个原子性的字符串<br>        &#x2F;&#x2F;线程1<br>        NSThread * thread1 &#x3D; [[NSThread alloc] initWithBlock:^{<br>        for (int i &#x3D; 0; i &lt; 100000; i ++) {<br>            if (i % 2 &#x3D;&#x3D; 0) {<br>                self.stringA &#x3D; @”a very long string”;<br>            }<br>            else {<br>                self.stringA &#x3D; @”string”;<br>            }<br>            NSLog(@”Thread A: %@\n”, self.stringA);<br>          }<br>        }];<br>        &#x2F;&#x2F;线程2<br>        NSThread * thread2 &#x3D; [[NSThread alloc] initWithBlock:^{<br>          for (int i &#x3D; 0; i &lt; 100000; i ++) {<br>            if (self.stringA.length &gt;&#x3D; 10) {<br>                NSString* subStr &#x3D; [self.stringA substringWithRange:NSMakeRange(0, 10)];<br>            }<br>            NSLog(@”Thread B: %@\n”, self.stringA);<br>        }<br>    }];</p><blockquote><p> 虽然stringA是atomic的property，而且在取substring的时候做了length判断，线程B还是很容易crash，因为在前一刻读length的时候self.stringA &#x3D; @”a very long string”;，下一刻取substring的时候线程A已经将self.stringA &#x3D; @”string”;，立即出现out of bounds的Exception，crash，多线程不安全。</p></blockquote><blockquote><p>文末小节：atomic 只是给setter和getter 加了个锁，atomic只能保证进入getter 和 setter 函数内部时是安全的，一旦出了getter 和 setter ，多线程的安全就只能靠我们自己来保障了。另外atomic由于加锁所以会带来一些性能损耗，所以我们在iOS开发的时候，一般声明property为nonatomic，在需要做多线程安全的场景，我们自己去额外加锁做同步。</p></blockquote>]]></content>
+    
+    
+      
+      
+    <summary type="html">&lt;h3 id=&quot;atomic-和-nonatomic&quot;&gt;&lt;a href=&quot;#atomic-和-nonatomic&quot; class=&quot;headerlink&quot; title=&quot;atomic  和  nonatomic&quot;&gt;&lt;/a&gt;atomic  和  nonatomic&lt;/h3&gt;&lt;p&gt;1.</summary>
+      
+    
+    
+    
+    
+  </entry>
+  
+  <entry>
+    <title></title>
+    <link href="http://example.com/2023/01/09/iOS%20UILabel%20%E8%AE%BE%E7%BD%AE%E9%AB%98%E5%BA%A6%E8%87%AA%E9%80%82%E5%BA%94%EF%BC%8C%E4%B8%8D%E6%8B%89%E4%BC%B8/"/>
+    <id>http://example.com/2023/01/09/iOS%20UILabel%20%E8%AE%BE%E7%BD%AE%E9%AB%98%E5%BA%A6%E8%87%AA%E9%80%82%E5%BA%94%EF%BC%8C%E4%B8%8D%E6%8B%89%E4%BC%B8/</id>
+    <published>2023-01-09T02:27:35.243Z</published>
+    <updated>2023-01-30T05:55:43.677Z</updated>
+    
+    <content type="html"><![CDATA[<h3 id="iOS-UILabel-设置高度自适应，不拉伸"><a href="#iOS-UILabel-设置高度自适应，不拉伸" class="headerlink" title="iOS UILabel 设置高度自适应，不拉伸"></a>iOS UILabel 设置高度自适应，不拉伸</h3><p>设置两个参数约束 ,同理可以适用于宽度</p><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">[leftlbl setContentCompressionResistancePriority:UILayoutPriorityDefaultHigh forAxis:UILayoutConstraintAxisHorizontal];</span><br></pre></td></tr></table></figure>]]></content>
+    
+    
+      
+      
+    <summary type="html">&lt;h3 id=&quot;iOS-UILabel-设置高度自适应，不拉伸&quot;&gt;&lt;a href=&quot;#iOS-UILabel-设置高度自适应，不拉伸&quot; class=&quot;headerlink&quot; title=&quot;iOS UILabel 设置高度自适应，不拉伸&quot;&gt;&lt;/a&gt;iOS UILabel 设置高度自</summary>
+      
+    
+    
+    
+    
+  </entry>
+  
+  <entry>
+    <title></title>
+    <link href="http://example.com/2023/01/09/%E7%BA%BF%E7%A8%8B%E4%B9%8B%E9%97%B4%E7%9A%84%E9%80%9A%E8%AE%AF/"/>
+    <id>http://example.com/2023/01/09/%E7%BA%BF%E7%A8%8B%E4%B9%8B%E9%97%B4%E7%9A%84%E9%80%9A%E8%AE%AF/</id>
+    <published>2023-01-09T02:27:33.710Z</published>
+    <updated>2023-01-30T05:55:43.684Z</updated>
+    
+    
+    
+    
+    
+  </entry>
+  
+  <entry>
+    <title></title>
+    <link href="http://example.com/2023/01/09/%E5%88%86%E7%B1%BB%20&amp;%20%E7%B1%BB%E6%89%A9%E5%B1%95%EF%BC%88oc%20%E4%B8%8Eswift%EF%BC%89/"/>
+    <id>http://example.com/2023/01/09/%E5%88%86%E7%B1%BB%20&amp;%20%E7%B1%BB%E6%89%A9%E5%B1%95%EF%BC%88oc%20%E4%B8%8Eswift%EF%BC%89/</id>
+    <published>2023-01-09T02:27:32.140Z</published>
+    <updated>2023-01-30T05:55:43.686Z</updated>
+    
+    
+    
+    
+    
+  </entry>
+  
+  <entry>
+    <title></title>
+    <link href="http://example.com/2023/01/09/%E5%A4%9A%E7%BA%BF%E7%A8%8B/"/>
+    <id>http://example.com/2023/01/09/%E5%A4%9A%E7%BA%BF%E7%A8%8B/</id>
+    <published>2023-01-09T02:27:32.126Z</published>
+    <updated>2023-01-30T05:55:43.679Z</updated>
+    
+    <content type="html"><![CDATA[<p>![image-20230109102728663](&#x2F;Users&#x2F;david&#x2F;Library&#x2F;Application Support&#x2F;typora-user-images&#x2F;image-20230109102728663.png)</p>]]></content>
+    
+    
+      
+      
+    <summary type="html">&lt;p&gt;![image-20230109102728663](&amp;#x2F;Users&amp;#x2F;david&amp;#x2F;Library&amp;#x2F;Application Support&amp;#x2F;typora-user-images&amp;#x2F;image-20230109102728</summary>
       
     
     
